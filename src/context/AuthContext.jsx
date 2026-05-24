@@ -6,6 +6,7 @@ import {
   getStoredUser,
   setStoredToken,
   setStoredUser,
+  setStoredRefreshToken,
 } from '../services/authStorage';
 import { setUnauthorizedHandler } from '../services/apiClient';
 import { AuthContext } from './authContext';
@@ -25,6 +26,7 @@ export function AuthProvider({ children }) {
   const login = async (payload) => {
     const response = await loginUser(payload);
     setStoredToken(response.token);
+    if (response.refreshToken) setStoredRefreshToken(response.refreshToken);
     setStoredUser(response.user);
     setToken(response.token);
     setUser(response.user);
@@ -34,6 +36,7 @@ export function AuthProvider({ children }) {
   const register = async (payload) => {
     const response = await registerUser(payload);
     setStoredToken(response.token);
+    if (response.refreshToken) setStoredRefreshToken(response.refreshToken);
     setStoredUser(response.user);
     setToken(response.token);
     setUser(response.user);

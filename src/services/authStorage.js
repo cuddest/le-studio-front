@@ -1,5 +1,6 @@
 const TOKEN_KEY = 'gym.auth.token';
 const USER_KEY = 'gym.auth.user';
+const REFRESH_KEY = 'gym.auth.refresh';
 
 export function getStoredToken() {
   return localStorage.getItem(TOKEN_KEY);
@@ -27,4 +28,13 @@ export function setStoredUser(user) {
 export function clearStoredAuth() {
   localStorage.removeItem(TOKEN_KEY);
   localStorage.removeItem(USER_KEY);
+  localStorage.removeItem(REFRESH_KEY);
+}
+
+export function getStoredRefreshToken() {
+  return localStorage.getItem(REFRESH_KEY);
+}
+
+export function setStoredRefreshToken(token) {
+  localStorage.setItem(REFRESH_KEY, token);
 }

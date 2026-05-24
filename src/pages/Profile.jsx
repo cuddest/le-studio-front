@@ -20,7 +20,7 @@ import { useUserDashboard } from '../hooks/useUserDashboard';
 export default function Profile() {
   const [headerRef, headerVisible] = useReveal(0.1);
   const { user, updateUser, logout } = useAuth();
-  const dashboard = useUserDashboard(user);
+  const dashboard = useUserDashboard();
 
   const [form, setForm] = useState({
     name: user?.name || '',

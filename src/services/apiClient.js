@@ -1,4 +1,5 @@
-import { getStoredToken } from './authStorage';
+import { getStoredToken, getStoredRefreshToken, setStoredToken, clearStoredAuth } from './authStorage';
+import { refreshUserToken } from './authService';
 
 let onUnauthorized = null;
 
@@ -23,9 +24,48 @@ export async function authenticatedFetch(url, options = {}) {
     headers,
   });
 
-  if (response.status === 401 && typeof onUnauthorized === 'function') {
-    onUnauthorized();
+  if (response.status !== 401) return response;
+
+  // Try to refresh token once
+  const refresh = getStoredRefreshToken();
+  if (!refresh) {
+    if (typeof onUnauthorized === 'function') onUnauthorized();
+    return response;
   }
 
-  return response;
+  // ensure single refresh in progress
+  if (!global.__auth_refresh_in_progress) {
+    global.__auth_refresh_in_progress = (async () => {
+      try {
+        const refreshed = await refreshUserToken(refresh);
+        if (refreshed && refreshed.token) {
+          setStoredToken(refreshed.token);
+          if (refreshed.refreshToken) {
+            try { localStorage.setItem('gym.auth.refresh', refreshed.refreshToken); } catch {}
+          }
+          return refreshed.token;
+        }
+      } catch (e) {
+        return null;
+      }
+      return null;
+    })();
+  }
+
+  const newToken = await global.__auth_refresh_in_progress;
+  global.__auth_refresh_in_progress = null;
+
+  if (!newToken) {
+    if (typeof onUnauthorized === 'function') onUnauthorized();
+    return response;
+  }
+
+  // retry original request with new token
+  const retryHeaders = new Headers(options.headers || {});
+  retryHeaders.set('Authorization', `Bearer ${newToken}`);
+  if (!retryHeaders.has('Content-Type') && options.body) {
+    retryHeaders.set('Content-Type', 'application/json');
+  }
+
+  return fetch(url, { ...options, headers: retryHeaders });
 }

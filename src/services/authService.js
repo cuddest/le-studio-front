@@ -160,17 +160,4 @@ export async function logoutUser(token) {
   }
 }
 
-  }
 
-  return {
-    token: createMockToken(found.email),
-    user: {
-      id: found.id,
-      name: found.name,
-      email: found.email,
-      phone: found.phone,
-      membership: found.membership,
-      rewardPoints: found.rewardPoints,
-    },
-  };
-}
