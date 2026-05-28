@@ -1,5 +1,15 @@
-// Backend API configuration
-const API_BASE = import.meta.env.VITE_API_BASE || "";
+// Backend API configuration - normalize to ensure /api/v1 suffix
+const normalizeApiBase = (base) => {
+  if (!base) return 'https://le-studio-api.onrender.com/api/v1';
+  // Remove trailing slash if present
+  base = base.replace(/\/$/, '');
+  // If base doesn't end with /api/v1, append it
+  if (!base.endsWith('/api/v1')) {
+    base += '/api/v1';
+  }
+  return base;
+};
+const API_BASE = normalizeApiBase(import.meta.env.VITE_API_BASE);
 
 /**
  * Register a new user via backend API
@@ -15,11 +25,12 @@ export async function registerUser(payload) {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        first_name: payload.name?.split(" ")[0] || payload.name || "User",
-        last_name: payload.name?.split(" ").slice(1).join(" ") || " ",
+        first_name: payload.first_name || payload.name?.split(" ")[0] || payload.name || "User",
+        last_name: payload.last_name || payload.name?.split(" ").slice(1).join(" ") || " ",
         email: payload.email,
         password: payload.password,
         phone: payload.phone || "",
+        gender: payload.gender || "",
       }),
     });
 

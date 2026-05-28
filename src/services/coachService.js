@@ -1,5 +1,15 @@
 // Frontend service to fetch coaches from backend API
-const API_BASE = import.meta.env.VITE_API_BASE || 'https://le-studio-api.onrender.com/api/v1';
+const normalizeApiBase = (base) => {
+  if (!base) return 'https://le-studio-api.onrender.com/api/v1';
+  // Remove trailing slash if present
+  base = base.replace(/\/$/, '');
+  // If base doesn't end with /api/v1, append it
+  if (!base.endsWith('/api/v1')) {
+    base += '/api/v1';
+  }
+  return base;
+};
+const API_BASE = normalizeApiBase(import.meta.env.VITE_API_BASE);
 
 export async function listCoaches() {
   if (!API_BASE) {
