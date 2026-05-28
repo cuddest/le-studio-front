@@ -4,19 +4,19 @@ import { useNavigate } from 'react-router-dom';
 import Container from '../components/ui/Container';
 import Button from '../components/ui/Button';
 import Card from '../components/ui/Card';
+import BookSlotModal from '../components/modals/BookSlotModal';
 import { listAllAvailableSlots } from '../services/scheduleService';
-import { createBooking } from '../services/bookingService';
 import { useAuth } from '../hooks/useAuth';
 
 export default function Booking() {
   const navigate = useNavigate();
-  const { user, token } = useAuth();
+  const { user, token, userPacks, trainingTypes } = useAuth();
   const [slots, setSlots] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [bookingError, setBookingError] = useState('');
   const [bookingSuccess, setBookingSuccess] = useState('');
-  const [bookingSlotId, setBookingSlotId] = useState(null);
+  const [selectedSlot, setSelectedSlot] = useState(null);
+  const [showBookModal, setShowBookModal] = useState(false);
 
   useEffect(() => {
     if (!token) {
@@ -46,32 +46,18 @@ export default function Booking() {
   }, [token, navigate]);
 
   async function handleBookSlot(slot) {
-    setBookingError('');
-    setBookingSuccess('');
-    setBookingSlotId(slot.id);
-
-    if (!user?.id) {
-      setBookingError('User information not loaded. Please refresh and try again.');
-      setBookingSlotId(null);
-      return;
-    }
-
-    try {
-      // For now, create a booking without specifying a user pack
-      // In a full implementation, user would select their pack first
-      // This endpoint will fail if user has no active pack with this training type
-      // TODO: integrate with user packs selection UI
-      await createBooking(slot.id, 1); // placeholder: use first available pack
-      setBookingSuccess(`Successfully booked ${slot.name}!`);
-      setTimeout(() => {
-        navigate('/profile');
-      }, 1500);
-    } catch (err) {
-      setBookingError(err.message || 'Failed to book slot. Please try again.');
-    } finally {
-      setBookingSlotId(null);
-    }
+    setSelectedSlot(slot);
+    setShowBookModal(true);
   }
+
+  const handleBookingSuccess = () => {
+    setBookingSuccess(`Successfully booked ${selectedSlot?.name}!`);
+    setShowBookModal(false);
+    setSelectedSlot(null);
+    setTimeout(() => {
+      navigate('/my-bookings');
+    }, 1500);
+  };
 
   const formatDateTime = (isoString) => {
     if (!isoString) return 'TBD';
@@ -154,20 +140,26 @@ export default function Booking() {
                   </div>
                   <Button
                     onClick={() => handleBookSlot(slot)}
-                    disabled={bookingSlotId === slot.id}
                     className="w-full"
                   >
-                    {bookingSlotId === slot.id ? 'Booking...' : 'Book Slot'}
+                    Book Slot
                   </Button>
                 </Card>
               ))}
             </div>
           )}
 
-          {bookingError && (
-            <div className="mt-6 rounded-lg bg-red-50 border border-red-200 p-4 text-sm text-red-800">
-              ⚠ Booking Error: {bookingError}
-            </div>
+          {showBookModal && selectedSlot && (
+            <BookSlotModal
+              slot={selectedSlot}
+              userPacks={userPacks}
+              trainingTypes={trainingTypes}
+              onClose={() => {
+                setShowBookModal(false);
+                setSelectedSlot(null);
+              }}
+              onSuccess={handleBookingSuccess}
+            />
           )}
         </Container>
       </section>
