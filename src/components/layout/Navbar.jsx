@@ -7,6 +7,8 @@ import { useAuth } from '../../hooks/useAuth';
 const navLinks = [
   { name: 'Home', path: '/' },
   { name: 'Classes', path: '/classes' },
+  { name: 'Packs', path: '/packs' },
+  { name: 'Booking', path: '/booking' },
   { name: 'Coaches', path: '/coaches' },
 ];
 

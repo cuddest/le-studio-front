@@ -4,6 +4,7 @@ import ProtectedRoute from './components/auth/ProtectedRoute';
 import Home from './pages/Home';
 import Classes from './pages/Classes';
 import Coaches from './pages/Coaches';
+import Packs from './pages/Packs';
 import Booking from './pages/Booking';
 import MyBookings from './pages/MyBookings';
 import Login from './pages/Login';
@@ -16,6 +17,7 @@ export default function App() {
       <Route path="/" element={<Layout />}>
         <Route index element={<Home />} />
         <Route path="classes" element={<Classes />} />
+        <Route path="packs" element={<Packs />} />
         <Route path="booking" element={<Booking />} />
         <Route path="coaches" element={<Coaches />} />
         <Route path="trainers" element={<Coaches />} />

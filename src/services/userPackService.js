@@ -10,6 +10,87 @@ const normalizeApiBase = (base) => {
 const API_BASE = normalizeApiBase(import.meta.env.VITE_API_BASE);
 
 /**
+ * Fetch available pack templates users can purchase
+ */
+export async function listPackTemplates() {
+  if (!API_BASE) {
+    throw new Error('API base URL not configured. Set VITE_API_BASE in .env');
+  }
+
+  const res = await fetch(`${API_BASE}/pack-templates`);
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err?.error?.message || `Failed to load pack templates (${res.status})`);
+  }
+
+  const payload = await res.json().catch(() => ({}));
+  const list = payload.data || payload || [];
+
+  return (list || []).map((template) => ({
+    id: template.ID || template.id,
+    name: template.Name || template.name || 'Pack',
+    numberOfSessions: template.NumberOfSessions ?? template.number_of_sessions ?? 0,
+    price: template.Price ?? template.price ?? 0,
+    displayOrder: template.DisplayOrder ?? template.display_order ?? 0,
+    isActive: template.IsActive ?? template.is_active ?? false,
+    trainingTypeIds: extractTrainingTypeIdsFromTemplate(template),
+    trainingTypeNames: extractTrainingTypeNamesFromTemplate(template),
+  }));
+}
+
+/**
+ * Request purchase of a pack template for the current user.
+ * The backend creates a user-pack record; it may remain pending until payment is confirmed.
+ */
+export async function purchasePack(packTemplateId) {
+  if (!API_BASE) {
+    throw new Error('API base URL not configured. Set VITE_API_BASE in .env');
+  }
+
+  const token = localStorage.getItem('token');
+  if (!token) {
+    throw new Error('Not authenticated. Please login first.');
+  }
+
+  const res = await fetch(`${API_BASE}/user-packs`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      pack_template_id: Number(packTemplateId),
+      is_paid: false,
+    }),
+  });
+
+  if (res.status === 401) {
+    throw new Error('Unauthorized. Please login again.');
+  }
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err?.error?.message || `Failed to purchase pack (${res.status})`);
+  }
+
+  const payload = await res.json().catch(() => ({}));
+  const pack = payload.data || payload;
+
+  return {
+    id: pack.ID || pack.id,
+    userId: pack.UserID || pack.user_id,
+    templateId: pack.PackTemplateID || pack.pack_template_id,
+    totalSessions: pack.TotalSessions ?? pack.total_sessions ?? 0,
+    usedSessions: pack.UsedSessions ?? pack.used_sessions ?? 0,
+    remainingSessions: (pack.TotalSessions ?? pack.total_sessions ?? 0) - (pack.UsedSessions ?? pack.used_sessions ?? 0),
+    isPaid: pack.IsPaid ?? pack.is_paid ?? false,
+    status: pack.Status || pack.status || 'pending',
+    createdAt: pack.CreatedAt || pack.created_at || '',
+  };
+}
+
+/**
  * Fetch current user's packs (active ones with session counts)
  */
 export async function listUserPacks() {
@@ -90,6 +171,50 @@ function extractTrainingTypeIds(pack) {
   }
 
   return [...new Set(types)]; // dedup
+}
+
+function extractTrainingTypeIdsFromTemplate(template) {
+  const types = [];
+
+  if (Array.isArray(template.TrainingTypes)) {
+    template.TrainingTypes.forEach((t) => {
+      if (t.ID || t.id) types.push(String(t.ID || t.id));
+    });
+  }
+
+  if (Array.isArray(template.training_types)) {
+    template.training_types.forEach((t) => {
+      if (typeof t === 'object') {
+        if (t.ID || t.id) types.push(String(t.ID || t.id));
+      } else if (t) {
+        types.push(String(t));
+      }
+    });
+  }
+
+  return [...new Set(types)];
+}
+
+function extractTrainingTypeNamesFromTemplate(template) {
+  const names = [];
+
+  if (Array.isArray(template.TrainingTypes)) {
+    template.TrainingTypes.forEach((t) => {
+      const name = t.Name || t.name || t.Code || '';
+      if (name) names.push(name);
+    });
+  }
+
+  if (Array.isArray(template.training_types)) {
+    template.training_types.forEach((t) => {
+      if (typeof t === 'object') {
+        const name = t.Name || t.name || t.Code || '';
+        if (name) names.push(name);
+      }
+    });
+  }
+
+  return [...new Set(names)];
 }
 
 /**
