@@ -3,10 +3,30 @@ import { Link } from 'react-router-dom';
 import Container from '../components/ui/Container';
 import Button from '../components/ui/Button';
 import { useReveal } from '../hooks/useReveal';
-import { instructors } from '../data';
+import { useEffect, useState } from 'react';
+import { listCoaches } from '../services/coachService';
 
 export default function Coaches() {
   const [headerRef, headerVisible] = useReveal(0.1);
+
+  const [coaches, setCoaches] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+    setLoading(true);
+    listCoaches()
+      .then((data) => {
+        if (mounted) setCoaches(data || []);
+      })
+      .catch(() => {
+        if (mounted) setCoaches([]);
+      })
+      .finally(() => mounted && setLoading(false));
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   return (
     <>
@@ -29,9 +49,13 @@ export default function Coaches() {
       <section className="bg-alabaster py-16 sm:py-24">
         <Container>
           <div className="space-y-16 sm:space-y-24">
-            {instructors.map((coach, index) => (
-              <CoachRow key={coach.id} coach={coach} reverse={index % 2 !== 0} />
-            ))}
+            {loading ? (
+              <p className="text-center text-text-muted">Loading coaches…</p>
+            ) : (
+              (coaches || []).map((coach, index) => (
+                <CoachRow key={coach.id || index} coach={coach} reverse={index % 2 !== 0} />
+              ))
+            )}
           </div>
         </Container>
       </section>
