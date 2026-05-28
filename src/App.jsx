@@ -5,6 +5,7 @@ import Home from './pages/Home';
 import Classes from './pages/Classes';
 import Coaches from './pages/Coaches';
 import Booking from './pages/Booking';
+import MyBookings from './pages/MyBookings';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Profile from './pages/Profile';
@@ -25,6 +26,14 @@ export default function App() {
           element={(
             <ProtectedRoute>
               <Profile />
+            </ProtectedRoute>
+          )}
+        />
+        <Route
+          path="my-bookings"
+          element={(
+            <ProtectedRoute>
+              <MyBookings />
             </ProtectedRoute>
           )}
         />
