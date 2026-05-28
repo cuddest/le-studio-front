@@ -1,5 +1,5 @@
 // Frontend service to fetch coaches from backend API
-const API_BASE = import.meta.env.VITE_API_BASE || '';
+const API_BASE = import.meta.env.VITE_API_BASE || 'https://le-studio-api.onrender.com/api/v1';
 
 export async function listCoaches() {
   if (!API_BASE) {
