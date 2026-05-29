@@ -50,17 +50,8 @@ export async function purchasePack(packTemplateId) {
     throw new Error('API base URL not configured. Set VITE_API_BASE in .env');
   }
 
-  const token = getStoredToken();
-  if (!token) {
-    throw new Error('Not authenticated. Please login first.');
-  }
-
-  const res = await fetch(`${API_BASE}/user-packs`, {
+  const res = await authenticatedFetch(`${API_BASE}/user-packs`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-    },
     body: JSON.stringify({
       pack_template_id: Number(packTemplateId),
       is_paid: false,
@@ -100,17 +91,8 @@ export async function listUserPacks() {
     throw new Error('API base URL not configured. Set VITE_API_BASE in .env');
   }
 
-  const token = getStoredToken();
-  if (!token) {
-    throw new Error('Not authenticated. Please login first.');
-  }
-
-  const res = await fetch(`${API_BASE}/users/me/packs`, {
+  const res = await authenticatedFetch(`${API_BASE}/users/me/packs`, {
     method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-    },
   });
 
   if (res.status === 401) {

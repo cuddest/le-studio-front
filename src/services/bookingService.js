@@ -1,5 +1,6 @@
 // Frontend service to manage user bookings
 import { getStoredToken } from './authStorage';
+import { authenticatedFetch } from './apiClient';
 const normalizeApiBase = (base) => {
   if (!base) return 'https://le-studio-api.onrender.com/api/v1';
   base = base.replace(/\/$/, '');
@@ -18,12 +19,8 @@ export async function listUserBookings() {
     throw new Error('API base URL not configured. Set VITE_API_BASE in .env');
   }
 
-  const res = await fetch(`${API_BASE}/users/me/bookings`, {
+  const res = await authenticatedFetch(`${API_BASE}/users/me/bookings`, {
     method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${getStoredToken() || ''}`,
-    },
   });
 
   if (res.status === 401) {
@@ -60,12 +57,8 @@ export async function getBooking(bookingId) {
     throw new Error('API base URL not configured. Set VITE_API_BASE in .env');
   }
 
-  const res = await fetch(`${API_BASE}/bookings/${bookingId}`, {
+  const res = await authenticatedFetch(`${API_BASE}/bookings/${bookingId}`, {
     method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${getStoredToken() || ''}`,
-    },
   });
 
   if (res.status === 401) {
@@ -103,12 +96,8 @@ export async function createBooking(slotId, userPackId) {
     throw new Error('API base URL not configured. Set VITE_API_BASE in .env');
   }
 
-  const res = await fetch(`${API_BASE}/bookings`, {
+  const res = await authenticatedFetch(`${API_BASE}/bookings`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${getStoredToken() || ''}`,
-    },
     body: JSON.stringify({
       slot_id: slotId,
       user_pack_id: userPackId,
@@ -148,12 +137,8 @@ export async function cancelBooking(bookingId) {
     throw new Error('API base URL not configured. Set VITE_API_BASE in .env');
   }
 
-  const res = await fetch(`${API_BASE}/bookings/${bookingId}/cancel`, {
+  const res = await authenticatedFetch(`${API_BASE}/bookings/${bookingId}/cancel`, {
     method: 'PATCH',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${getStoredToken() || ''}`,
-    },
   });
 
   if (res.status === 401) {
