@@ -47,7 +47,7 @@ export default function MyBookings() {
     if (!isoString) return 'TBD';
     try {
       const date = new Date(isoString);
-      if (isNaN(date.getTime())) return 'Invalid date';
+      if (isNaN(date.getTime())) return 'TBA';
       return date.toLocaleDateString('en-US', {
         weekday: 'long',
         year: 'numeric',
