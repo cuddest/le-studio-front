@@ -18,9 +18,14 @@ function formatSlot(slot, coach) {
     image: 'https://images.unsplash.com/photo-1574680096145-d05b474e2155?w=700&h=450&fit=crop&q=80',
     description: `${slot.trainingTypeName || slot.training_type?.name || 'Training'} session at ${Number.isNaN(startTime.getTime()) ? 'TBA' : startTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })}`,
     slotId: slot.id,
+    date: slot.date || '',
     startTime: slot.startTime || slot.start_time || '',
+    endTime: slot.endTime || slot.end_time || '',
+    dayOfWeek: slot.dayOfWeek,
+    level: slot.level || 'All Levels',
+    slotType: slot.slotType || 'mixte',
     capacity: slot.capacity,
-    bookedCount: slot.booked_count,
+    bookedCount: slot.bookedCount || slot.booked_count || 0,
     isCancelled: Boolean(slot.isCancelled || slot.is_cancelled),
   };
 }

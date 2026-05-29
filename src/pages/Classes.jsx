@@ -1,16 +1,61 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, CalendarDays, Clock3, UserRound, Users, Activity } from 'lucide-react';
 import Container from '../components/ui/Container';
 import SectionHeading from '../components/ui/SectionHeading';
 import Button from '../components/ui/Button';
-import ClassOfferCard from '../components/cards/ClassOfferCard';
 import { fetchClassCatalog } from '../services/classesService';
+
+const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+function toDayIndex(slot) {
+  if (Number.isInteger(slot.dayOfWeek)) {
+    return slot.dayOfWeek;
+  }
+  const dateSource = slot.date || slot.startTime || slot.start_time;
+  const d = new Date(dateSource);
+  if (!Number.isNaN(d.getTime())) {
+    return d.getDay();
+  }
+  return -1;
+}
+
+function formatClock(value) {
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return 'TBA';
+  return d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+}
+
+function formatDateLabel(value) {
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return 'No date';
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function slotSort(a, b) {
+  const da = new Date(a.startTime || a.start_time || a.date || 0).getTime();
+  const db = new Date(b.startTime || b.start_time || b.date || 0).getTime();
+  return da - db;
+}
 
 export default function Classes() {
   const [catalog, setCatalog] = useState([]);
+  const [selectedLevel, setSelectedLevel] = useState('all');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const allOffers = catalog.flatMap((group) => group.offers || []);
+  const levels = ['all', ...catalog.map((group) => group.level)];
+  const filteredOffers = selectedLevel === 'all'
+    ? allOffers
+    : allOffers.filter((slot) => (slot.level || 'All Levels') === selectedLevel);
+
+  const slotsByDay = DAY_NAMES.map((name, index) => {
+    const items = filteredOffers
+      .filter((slot) => toDayIndex(slot) === index)
+      .sort(slotSort);
+    return { name, index, items };
+  });
 
   useEffect(() => {
     const loadCatalog = async () => {
@@ -40,10 +85,10 @@ export default function Classes() {
               Classes & Pricing
             </p>
             <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-light text-white tracking-tight leading-tight">
-              Train by <em className="text-oak">level</em>, progress with clarity
+              Weekly <em className="text-oak">schedule</em>, all sessions in one place
             </h1>
             <p className="mt-5 text-text-warm text-base leading-relaxed max-w-2xl">
-              Explore our class catalog grouped by Beginner, Intermediate, and Advanced levels. Every class includes transparent pricing and a direct booking path.
+              Browse the full week exactly as configured in the schedule tables, with every session detail: time, coach, discipline, level, capacity, and booking status.
             </p>
           </div>
         </Container>
@@ -70,11 +115,30 @@ export default function Classes() {
           )}
 
           {!loading && !error && catalog.length > 0 && (
-            <div className="space-y-14 sm:space-y-16">
-              {catalog.map((group) => (
-                <LevelSection key={group.level} group={group} />
-              ))}
-            </div>
+            <>
+              <div className="mb-8 flex flex-wrap gap-2">
+                {levels.map((level) => (
+                  <button
+                    key={level}
+                    type="button"
+                    onClick={() => setSelectedLevel(level)}
+                    className={`px-4 py-2 rounded-full border text-xs tracking-[0.16em] uppercase transition-colors ${
+                      selectedLevel === level
+                        ? 'bg-charcoal text-white border-charcoal'
+                        : 'bg-white text-text-muted border-border-light hover:border-charcoal'
+                    }`}
+                  >
+                    {level === 'all' ? 'All Levels' : level}
+                  </button>
+                ))}
+              </div>
+
+              <div className="space-y-8">
+                {slotsByDay.map((day) => (
+                  <DayScheduleSection key={day.name} day={day} />
+                ))}
+              </div>
+            </>
           )}
         </Container>
       </section>
@@ -106,17 +170,70 @@ export default function Classes() {
   );
 }
 
-function LevelSection({ group }) {
+function DayScheduleSection({ day }) {
+  if (!day.items.length) {
+    return (
+      <section className="bg-white border border-border-light rounded-xl p-6">
+        <div className="flex items-center justify-between">
+          <h3 className="font-serif text-2xl text-charcoal">{day.name}</h3>
+          <span className="text-xs uppercase tracking-[0.2em] text-text-muted">No sessions</span>
+        </div>
+      </section>
+    );
+  }
+
   return (
-    <section>
-      <SectionHeading
-        title={`${group.level} Level`}
-        subtitle={group.intro}
-        align="left"
-      />
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {group.offers.map((offer) => (
-          <ClassOfferCard key={offer.id} offer={offer} />
+    <section className="bg-white border border-border-light rounded-xl overflow-hidden">
+      <div className="px-6 py-4 bg-charcoal-deep text-white flex items-center justify-between">
+        <h3 className="font-serif text-2xl">{day.name}</h3>
+        <span className="text-xs uppercase tracking-[0.2em] text-oak">{day.items.length} Sessions</span>
+      </div>
+
+      <div className="divide-y divide-border-light">
+        {day.items.map((slot) => (
+          <article key={slot.id} className="p-5 sm:p-6">
+            <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+              <div>
+                <h4 className="font-serif text-2xl text-charcoal">{slot.title}</h4>
+                <p className="text-text-muted mt-1">{slot.discipline}</p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <span className="px-3 py-1 rounded-full bg-alabaster text-[10px] tracking-[0.16em] uppercase text-text-muted border border-border-light">
+                  {slot.level || 'All Levels'}
+                </span>
+                {slot.isCancelled ? (
+                  <span className="px-3 py-1 rounded-full bg-red-50 text-[10px] tracking-[0.16em] uppercase text-red-700 border border-red-200">
+                    Cancelled
+                  </span>
+                ) : (
+                  <span className="px-3 py-1 rounded-full bg-green-50 text-[10px] tracking-[0.16em] uppercase text-green-700 border border-green-200">
+                    Active
+                  </span>
+                )}
+              </div>
+            </div>
+
+            <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 text-sm text-text-muted">
+              <p className="flex items-center gap-2"><CalendarDays size={14} className="text-oak" />{formatDateLabel(slot.date || slot.startTime)}</p>
+              <p className="flex items-center gap-2"><Clock3 size={14} className="text-oak" />{formatClock(slot.startTime)} - {formatClock(slot.endTime)}</p>
+              <p className="flex items-center gap-2"><UserRound size={14} className="text-oak" />{slot.coach || 'TBA'}</p>
+              <p className="flex items-center gap-2"><Users size={14} className="text-oak" />{slot.bookedCount || 0}/{slot.capacity || 0}</p>
+              <p className="flex items-center gap-2"><Activity size={14} className="text-oak" />{slot.slotType || 'mixte'}</p>
+            </div>
+
+            <div className="mt-5 flex items-center justify-between border-t border-border-light pt-4">
+              <p className="text-sm text-text-muted">
+                Price: <span className="font-serif text-charcoal text-xl leading-none">{slot.price} DA</span>
+              </p>
+              <Link to="/booking">
+                <Button variant="oak" size="sm">
+                  Book Session
+                  <ArrowRight size={14} />
+                </Button>
+              </Link>
+            </div>
+          </article>
         ))}
       </div>
     </section>
