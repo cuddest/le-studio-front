@@ -47,6 +47,7 @@ export default function MyBookings() {
     if (!isoString) return 'TBD';
     try {
       const date = new Date(isoString);
+      if (isNaN(date.getTime())) return 'Invalid date';
       return date.toLocaleDateString('en-US', {
         weekday: 'long',
         year: 'numeric',
@@ -93,12 +94,27 @@ export default function MyBookings() {
     }
   }
 
-  const upcomingBookings = bookings.filter(
-    (b) => b.status?.toLowerCase() !== 'cancelled' && new Date(b.startTime) > new Date()
-  );
-  const pastBookings = bookings.filter(
-    (b) => new Date(b.startTime) <= new Date()
-  );
+  // Helper to safely parse booking date
+  const getBookingDate = (booking) => {
+    if (!booking.startTime) return null;
+    const date = new Date(booking.startTime);
+    return isNaN(date.getTime()) ? null : date;
+  };
+
+  const upcomingBookings = bookings.filter((b) => {
+    const bookingDate = getBookingDate(b);
+    return b.status?.toLowerCase() !== 'cancelled' && bookingDate && bookingDate > new Date();
+  });
+
+  const pastBookings = bookings.filter((b) => {
+    const bookingDate = getBookingDate(b);
+    return bookingDate && bookingDate <= new Date();
+  });
+
+  // Debug: log bookings if filter results are empty
+  if (bookings.length > 0 && upcomingBookings.length === 0 && pastBookings.length === 0) {
+    console.log('Bookings exist but filters failed. Sample booking:', bookings[0]);
+  }
 
   return (
     <>
@@ -161,7 +177,9 @@ export default function MyBookings() {
             <div className="space-y-8">
               {bookings.length > 0 && upcomingBookings.length === 0 && pastBookings.length === 0 && (
                 <div className="rounded-lg bg-yellow-50 border border-yellow-200 p-6 text-center">
-                  <p className="text-yellow-900">Bookings loaded but unable to parse dates. Please try refreshing the page.</p>
+                  <p className="text-yellow-900">
+                    {bookings.length} booking(s) loaded, but dates couldn't be parsed. Check browser console for details and try refreshing.
+                  </p>
                 </div>
               )}
               {/* Upcoming Bookings */}
