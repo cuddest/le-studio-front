@@ -43,19 +43,13 @@ export default function Classes() {
   const [selectedLevel, setSelectedLevel] = useState('all');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  const allOffers = catalog.flatMap((group) => group.offers || []);
-  const levels = ['all', ...catalog.map((group) => group.level)];
+  // `catalog` holds schedules with slots
+  const schedules = catalog;
+  const allOffers = schedules.flatMap((s) => s.slots || []);
+  const levels = ['all', ...Array.from(new Set(allOffers.map((o) => o.level || 'All Levels'))).filter(Boolean)];
   const filteredOffers = selectedLevel === 'all'
-    ? allOffers 
-    : allOffers.filter((slot) => (slot.level || 'All Levels') === selectedLevel); 
-
-  const slotsByDay = DAY_NAMES.map((name, index) => {
-    const items = filteredOffers
-      .filter((slot) => toDayIndex(slot) === index)
-      .sort(slotSort);
-    return { name, index, items };
-  });
+    ? allOffers
+    : allOffers.filter((slot) => (slot.level || 'All Levels') === selectedLevel);
 
   useEffect(() => {
     const loadSchedules = async () => {
