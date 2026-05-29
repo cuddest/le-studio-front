@@ -41,9 +41,9 @@ export async function listUserBookings() {
     slotId: b.SlotID || b.slot_id,
     userPackId: b.UserPackID || b.user_pack_id,
     status: b.Status || b.status || 'confirmed',
-    slotName: b.Slot?.Name || b.slot?.name || 'Session',
-    startTime: b.Slot?.StartTime || b.slot?.start_time || b.CreatedAt || b.created_at || '',
-    className: b.Slot?.Name || b.slot?.name || 'Unknown Class',
+    slotName: (b.slot?.name || b.Slot?.Name || b.slot?.Name || 'Session'),
+    startTime: (b.slot?.start_time || b.Slot?.StartTime || b.slot?.StartTime || b.CreatedAt || b.created_at || ''),
+    className: (b.slot?.name || b.Slot?.Name || b.slot?.Name || 'Unknown Class'),
     cancelledAt: b.CancelledAt || b.cancelled_at || null,
     createdAt: b.CreatedAt || b.created_at || '',
   }));
@@ -79,8 +79,8 @@ export async function getBooking(bookingId) {
     slotId: b.SlotID || b.slot_id,
     userPackId: b.UserPackID || b.user_pack_id,
     status: b.Status || b.status || 'confirmed',
-    slotName: b.Slot?.Name || b.slot?.name || 'Session',
-    startTime: b.Slot?.StartTime || b.slot?.start_time || b.CreatedAt || b.created_at || '',
+    slotName: (b.slot?.name || b.Slot?.Name || b.slot?.Name || 'Session'),
+    startTime: (b.slot?.start_time || b.Slot?.StartTime || b.slot?.StartTime || b.CreatedAt || b.created_at || ''),
     cancelledAt: b.CancelledAt || b.cancelled_at || null,
     createdAt: b.CreatedAt || b.created_at || '',
   };
@@ -122,8 +122,8 @@ export async function createBooking(slotId, userPackId) {
     slotId: b.SlotID || b.slot_id,
     userPackId: b.UserPackID || b.user_pack_id,
     status: b.Status || b.status || 'confirmed',
-    slotName: b.Slot?.Name || b.slot?.name || 'Session',
-    startTime: b.Slot?.StartTime || b.slot?.start_time || b.CreatedAt || b.created_at || '',
+    slotName: (b.slot?.name || b.Slot?.Name || b.slot?.Name || 'Session'),
+    startTime: (b.slot?.start_time || b.Slot?.StartTime || b.slot?.StartTime || b.CreatedAt || b.created_at || ''),
     createdAt: b.CreatedAt || b.created_at || '',
   };
 }
