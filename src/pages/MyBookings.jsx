@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Loader, AlertCircle, Trash2 } from 'lucide-react';
 import Container from '../components/ui/Container';
 import Button from '../components/ui/Button';
@@ -111,9 +111,12 @@ export default function MyBookings() {
     return bookingDate && bookingDate <= new Date();
   });
 
-  // Debug: log bookings if filter results are empty
-  if (bookings.length > 0 && upcomingBookings.length === 0 && pastBookings.length === 0) {
-    console.log('Bookings exist but filters failed. Sample booking:', bookings[0]);
+  // Debug: log all bookings
+  if (bookings.length > 0) {
+    console.log(`Total bookings: ${bookings.length}`);
+    console.log('Upcoming:', upcomingBookings.length);
+    console.log('Past:', pastBookings.length);
+    console.log('Bookings:', bookings);
   }
 
   return (
@@ -175,17 +178,10 @@ export default function MyBookings() {
             </div>
           ) : (
             <div className="space-y-8">
-              {bookings.length > 0 && upcomingBookings.length === 0 && pastBookings.length === 0 && (
-                <div className="rounded-lg bg-yellow-50 border border-yellow-200 p-6 text-center">
-                  <p className="text-yellow-900">
-                    {bookings.length} booking(s) loaded, but dates couldn't be parsed. Check browser console for details and try refreshing.
-                  </p>
-                </div>
-              )}
               {/* Upcoming Bookings */}
-              {upcomingBookings.length > 0 && (
-                <div>
-                  <h2 className="text-2xl font-serif text-charcoal mb-4">Upcoming</h2>
+              <div>
+                <h2 className="text-2xl font-serif text-charcoal mb-4">Upcoming Sessions</h2>
+                {upcomingBookings.length > 0 ? (
                   <div className="space-y-3">
                     {upcomingBookings.map((booking) => (
                       <div
@@ -222,13 +218,17 @@ export default function MyBookings() {
                       </div>
                     ))}
                   </div>
-                </div>
-              )}
+                ) : (
+                  <div className="rounded-lg border border-border-light bg-white p-6 text-sm text-text-muted">
+                    No upcoming bookings. <Link to="/booking" className="text-oak hover:text-oak-dark font-semibold">Book a class now</Link>.
+                  </div>
+                )}
+              </div>
 
               {/* Past Bookings */}
-              {pastBookings.length > 0 && (
-                <div>
-                  <h2 className="text-2xl font-serif text-charcoal mb-4">Past Sessions</h2>
+              <div>
+                <h2 className="text-2xl font-serif text-charcoal mb-4">Past Sessions</h2>
+                {pastBookings.length > 0 ? (
                   <div className="space-y-3">
                     {pastBookings.map((booking) => (
                       <div
@@ -257,8 +257,12 @@ export default function MyBookings() {
                       </div>
                     ))}
                   </div>
-                </div>
-              )}
+                ) : (
+                  <div className="rounded-lg border border-border-light bg-white p-6 text-sm text-text-muted">
+                    No past bookings.
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </Container>
@@ -266,3 +270,4 @@ export default function MyBookings() {
     </>
   );
 }
+
