@@ -1,5 +1,6 @@
 // Frontend service to manage user packs and training type compatibility
 import { getStoredToken } from './authStorage';
+import { authenticatedFetch } from './apiClient';
 
 const normalizeApiBase = (base) => {
   if (!base) return 'https://le-studio-api.onrender.com/api/v1';
