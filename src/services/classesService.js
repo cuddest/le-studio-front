@@ -98,3 +98,49 @@ export async function fetchClassCatalog() {
     throw error;
   }
 }
+
+/**
+ * Fetch schedules with their slots (no client-side filtering)
+ * Returns: [{ id, title, weekStart, weekEnd, publishedAt, slots: [formattedSlot,...] }, ...]
+ */
+export async function fetchSchedulesWithSlots() {
+  try {
+    const schedules = await listSchedules({ includeUnpublished: true });
+    const result = [];
+
+    for (const schedule of schedules) {
+      const scheduleId = schedule?.id || schedule?.ID;
+      if (!scheduleId) continue;
+      try {
+        const slots = await listSlotsBySchedule(scheduleId, { includeCancelled: true });
+        const formatted = (slots || []).map((s) => ({
+          ...s,
+          id: s.id,
+        }));
+        result.push({
+          id: scheduleId,
+          title: schedule.title || schedule.Title || 'Schedule',
+          weekStart: schedule.weekStart || schedule.WeekStart || '',
+          weekEnd: schedule.weekEnd || schedule.WeekEnd || '',
+          publishedAt: schedule.publishedAt || schedule.PublishedAt || '',
+          slots: formatted,
+        });
+      } catch (err) {
+        console.warn(`Failed to load slots for schedule ${scheduleId}:`, err);
+        result.push({
+          id: scheduleId,
+          title: schedule.title || schedule.Title || 'Schedule',
+          weekStart: schedule.weekStart || schedule.WeekStart || '',
+          weekEnd: schedule.weekEnd || schedule.WeekEnd || '',
+          publishedAt: schedule.publishedAt || schedule.PublishedAt || '',
+          slots: [],
+        });
+      }
+    }
+
+    return result;
+  } catch (error) {
+    console.error('Error fetching schedules with slots:', error);
+    throw error;
+  }
+}

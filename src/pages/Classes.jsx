@@ -47,8 +47,8 @@ export default function Classes() {
   const allOffers = catalog.flatMap((group) => group.offers || []);
   const levels = ['all', ...catalog.map((group) => group.level)];
   const filteredOffers = selectedLevel === 'all'
-    ? allOffers
-    : allOffers.filter((slot) => (slot.level || 'All Levels') === selectedLevel);
+    ? allOffers 
+    : allOffers.filter((slot) => (slot.level || 'All Levels') === selectedLevel); 
 
   const slotsByDay = DAY_NAMES.map((name, index) => {
     const items = filteredOffers
@@ -58,11 +58,11 @@ export default function Classes() {
   });
 
   useEffect(() => {
-    const loadCatalog = async () => {
+    const loadSchedules = async () => {
       try {
         setLoading(true);
         setError(null);
-        const data = await fetchClassCatalog();
+        const data = await fetchSchedulesWithSlots();
         setCatalog(data);
       } catch (err) {
         console.error('Failed to load class catalog:', err);
@@ -73,7 +73,7 @@ export default function Classes() {
       }
     };
 
-    loadCatalog();
+    loadSchedules();
   }, []);
 
   return (
@@ -134,9 +134,31 @@ export default function Classes() {
               </div>
 
               <div className="space-y-8">
-                {slotsByDay.map((day) => (
-                  <DayScheduleSection key={day.name} day={day} />
-                ))}
+                {schedules.map((schedule) => {
+                  const slots = (schedule.slots || []).filter((slot) =>
+                    selectedLevel === 'all' ? true : (slot.level || 'All Levels') === selectedLevel
+                  );
+                  const slotsByDay = DAY_NAMES.map((name, index) => ({
+                    name,
+                    index,
+                    items: slots.filter((slot) => toDayIndex(slot) === index).sort(slotSort),
+                  }));
+                  return (
+                    <section key={schedule.id} className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <h2 className="font-serif text-3xl text-charcoal">{schedule.title}</h2>
+                        <div className="text-text-muted text-sm">
+                          {schedule.weekStart ? `${formatDateLabel(schedule.weekStart)} → ${formatDateLabel(schedule.weekEnd)}` : ''}
+                        </div>
+                      </div>
+                      <div className="space-y-4">
+                        {slotsByDay.map((day) => (
+                          <DayScheduleSection key={`${schedule.id}-${day.name}`} day={day} />
+                        ))}
+                      </div>
+                    </section>
+                  );
+                })}
               </div>
             </>
           )}
