@@ -42,7 +42,7 @@ export async function listUserBookings() {
     userPackId: b.UserPackID || b.user_pack_id,
     status: b.Status || b.status || 'confirmed',
     slotName: b.Slot?.Name || b.slot?.name || 'Session',
-    startTime: b.Slot?.StartTime || b.slot?.start_time || '',
+    startTime: b.Slot?.StartTime || b.slot?.start_time || b.CreatedAt || b.created_at || '',
     className: b.Slot?.Name || b.slot?.name || 'Unknown Class',
     cancelledAt: b.CancelledAt || b.cancelled_at || null,
     createdAt: b.CreatedAt || b.created_at || '',
@@ -80,7 +80,7 @@ export async function getBooking(bookingId) {
     userPackId: b.UserPackID || b.user_pack_id,
     status: b.Status || b.status || 'confirmed',
     slotName: b.Slot?.Name || b.slot?.name || 'Session',
-    startTime: b.Slot?.StartTime || b.slot?.start_time || '',
+    startTime: b.Slot?.StartTime || b.slot?.start_time || b.CreatedAt || b.created_at || '',
     cancelledAt: b.CancelledAt || b.cancelled_at || null,
     createdAt: b.CreatedAt || b.created_at || '',
   };
@@ -123,7 +123,7 @@ export async function createBooking(slotId, userPackId) {
     userPackId: b.UserPackID || b.user_pack_id,
     status: b.Status || b.status || 'confirmed',
     slotName: b.Slot?.Name || b.slot?.name || 'Session',
-    startTime: b.Slot?.StartTime || b.slot?.start_time || '',
+    startTime: b.Slot?.StartTime || b.slot?.start_time || b.CreatedAt || b.created_at || '',
     createdAt: b.CreatedAt || b.created_at || '',
   };
 }
