@@ -1,46 +1,4 @@
-function normalizeApiBase(base) {
-  if (!base) return 'https://le-studio-api.onrender.com/api/v1';
-  // Ensure it ends with /api/v1
-  if (!base.endsWith('/api/v1')) {
-    base += '/api/v1';
-  }
-  return base;
-}
-
-const API_BASE = normalizeApiBase(import.meta.env.VITE_API_BASE);
-
-/**
- * Fetches all published schedules with their slots
- */
-export async function listSchedules() {
-  const response = await fetch(`${API_BASE}/schedules`);
-  if (!response.ok) {
-    throw new Error('Failed to fetch schedules');
-  }
-  return response.json();
-}
-
-/**
- * Fetches all training types
- */
-export async function listTrainingTypes() {
-  const response = await fetch(`${API_BASE}/training-types`);
-  if (!response.ok) {
-    throw new Error('Failed to fetch training types');
-  }
-  return response.json();
-}
-
-/**
- * Fetches slots for a specific schedule
- */
-export async function getScheduleSlots(scheduleId) {
-  const response = await fetch(`${API_BASE}/schedules/${scheduleId}/slots`);
-  if (!response.ok) {
-    throw new Error('Failed to fetch slots');
-  }
-  return response.json();
-}
+import { listSchedules, listSlotsBySchedule } from './scheduleService';
 
 /**
  * Converts API slot data to frontend format
@@ -72,20 +30,21 @@ function formatSlot(slot, coach) {
  */
 export async function fetchClassCatalog() {
   try {
-    // Fetch all schedules with slots
-    const schedulesResponse = await listSchedules();
-    const schedules = Array.isArray(schedulesResponse?.data) ? schedulesResponse.data : [];
+    const schedules = await listSchedules();
     
     // Build a map of all slots
     const allSlots = [];
     
     for (const schedule of schedules) {
+      const scheduleId = schedule?.id || schedule?.ID;
+      if (!scheduleId) {
+        continue;
+      }
       try {
-        const slotsResponse = await getScheduleSlots(schedule.id);
-        const slots = Array.isArray(slotsResponse?.data) ? slotsResponse.data : [];
+        const slots = await listSlotsBySchedule(scheduleId);
         allSlots.push(...slots);
       } catch (error) {
-        console.warn(`Failed to fetch slots for schedule ${schedule.id}:`, error);
+        console.warn(`Failed to fetch slots for schedule ${scheduleId}:`, error);
       }
     }
     
