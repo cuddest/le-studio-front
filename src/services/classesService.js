@@ -1,0 +1,135 @@
+function normalizeApiBase(base) {
+  if (!base) return 'https://le-studio-api.onrender.com/api/v1';
+  // Ensure it ends with /api/v1
+  if (!base.endsWith('/api/v1')) {
+    base += '/api/v1';
+  }
+  return base;
+}
+
+const API_BASE = normalizeApiBase(import.meta.env.VITE_API_BASE);
+
+/**
+ * Fetches all published schedules with their slots
+ */
+export async function listSchedules() {
+  const response = await fetch(`${API_BASE}/schedules`);
+  if (!response.ok) {
+    throw new Error('Failed to fetch schedules');
+  }
+  return response.json();
+}
+
+/**
+ * Fetches all training types
+ */
+export async function listTrainingTypes() {
+  const response = await fetch(`${API_BASE}/training-types`);
+  if (!response.ok) {
+    throw new Error('Failed to fetch training types');
+  }
+  return response.json();
+}
+
+/**
+ * Fetches slots for a specific schedule
+ */
+export async function getScheduleSlots(scheduleId) {
+  const response = await fetch(`${API_BASE}/schedules/${scheduleId}/slots`);
+  if (!response.ok) {
+    throw new Error('Failed to fetch slots');
+  }
+  return response.json();
+}
+
+/**
+ * Converts API slot data to frontend format
+ */
+function formatSlot(slot, coach) {
+  const startTime = new Date(slot.start_time);
+  const endTime = new Date(slot.end_time);
+  const duration = Math.round((endTime - startTime) / 60000);
+  
+  return {
+    id: `slot-${slot.id}`,
+    title: slot.name,
+    discipline: slot.training_type?.name || 'Training',
+    duration: `${duration} min`,
+    coach: coach?.name || 'TBA',
+    price: '2000', // Default price, adjust based on business logic
+    image: 'https://images.unsplash.com/photo-1574680096145-d05b474e2155?w=700&h=450&fit=crop&q=80',
+    description: `${slot.training_type?.name || 'Training'} session at ${startTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })}`,
+    slotId: slot.id,
+    startTime: slot.start_time,
+    capacity: slot.capacity,
+    bookedCount: slot.booked_count,
+  };
+}
+
+/**
+ * Fetches and groups all classes by level
+ * Returns data in classCatalogByLevel format
+ */
+export async function fetchClassCatalog() {
+  try {
+    // Fetch all schedules with slots
+    const schedulesResponse = await listSchedules();
+    const schedules = Array.isArray(schedulesResponse?.data) ? schedulesResponse.data : [];
+    
+    // Build a map of all slots
+    const allSlots = [];
+    
+    for (const schedule of schedules) {
+      try {
+        const slotsResponse = await getScheduleSlots(schedule.id);
+        const slots = Array.isArray(slotsResponse?.data) ? slotsResponse.data : [];
+        allSlots.push(...slots);
+      } catch (error) {
+        console.warn(`Failed to fetch slots for schedule ${schedule.id}:`, error);
+      }
+    }
+    
+    // Group slots by level
+    const groupedByLevel = {};
+    
+    allSlots.forEach(slot => {
+      const level = slot.level || 'All Levels';
+      if (!groupedByLevel[level]) {
+        groupedByLevel[level] = [];
+      }
+      
+      const coach = slot.coach || {};
+      const formatted = formatSlot(slot, coach);
+      groupedByLevel[level].push(formatted);
+    });
+    
+    // Define level order with intros
+    const levelIntros = {
+      'Beginner': 'Start with structure, breath cues, and low-impact progressions that build strong foundations.',
+      'Intermediate': 'Progressive sessions designed to deepen control, endurance, and full-body integration.',
+      'Advanced': 'High-intensity formats for experienced members seeking precision under fatigue and performance gains.',
+      'All Levels': 'Classes designed for everyone, regardless of experience level.',
+    };
+    
+    const levelOrder = ['Beginner', 'Intermediate', 'Advanced', 'All Levels'];
+    
+    // Convert to classCatalogByLevel format
+    const catalog = levelOrder
+      .filter(level => groupedByLevel[level] && groupedByLevel[level].length > 0)
+      .map(level => ({
+        level,
+        intro: levelIntros[level],
+        offers: groupedByLevel[level],
+      }));
+    
+    // If no slots found, create empty structure
+    if (catalog.length === 0) {
+      return [];
+    }
+    
+    return catalog;
+  } catch (error) {
+    console.error('Error fetching class catalog:', error);
+    throw error;
+  }
+}

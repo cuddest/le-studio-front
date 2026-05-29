@@ -1,12 +1,36 @@
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import Container from '../components/ui/Container';
 import SectionHeading from '../components/ui/SectionHeading';
 import Button from '../components/ui/Button';
 import ClassOfferCard from '../components/cards/ClassOfferCard';
-import { classCatalogByLevel } from '../data';
+import { fetchClassCatalog } from '../services/classesService';
 
 export default function Classes() {
+  const [catalog, setCatalog] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const loadCatalog = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const data = await fetchClassCatalog();
+        setCatalog(data);
+      } catch (err) {
+        console.error('Failed to load class catalog:', err);
+        setError('Unable to load classes. Please try again later.');
+        setCatalog([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadCatalog();
+  }, []);
+
   return (
     <>
       <section className="bg-charcoal-deep pt-28 pb-16 sm:pt-36 sm:pb-20">
@@ -27,11 +51,31 @@ export default function Classes() {
 
       <section className="bg-alabaster py-14 sm:py-20">
         <Container>
-          <div className="space-y-14 sm:space-y-16">
-            {classCatalogByLevel.map((group) => (
-              <LevelSection key={group.level} group={group} />
-            ))}
-          </div>
+          {loading && (
+            <div className="text-center py-12">
+              <p className="text-text-warm">Loading classes...</p>
+            </div>
+          )}
+          
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded p-4 text-red-700 text-center mb-8">
+              {error}
+            </div>
+          )}
+
+          {!loading && !error && catalog.length === 0 && (
+            <div className="text-center py-12">
+              <p className="text-text-warm">No classes available at the moment. Please check back soon.</p>
+            </div>
+          )}
+
+          {!loading && !error && catalog.length > 0 && (
+            <div className="space-y-14 sm:space-y-16">
+              {catalog.map((group) => (
+                <LevelSection key={group.level} group={group} />
+              ))}
+            </div>
+          )}
         </Container>
       </section>
 
