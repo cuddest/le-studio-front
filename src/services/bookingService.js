@@ -1,4 +1,5 @@
 // Frontend service to manage user bookings
+import { getStoredToken } from './authStorage';
 const normalizeApiBase = (base) => {
   if (!base) return 'https://le-studio-api.onrender.com/api/v1';
   base = base.replace(/\/$/, '');
@@ -21,7 +22,7 @@ export async function listUserBookings() {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
+      'Authorization': `Bearer ${getStoredToken() || ''}`,
     },
   });
 
@@ -63,7 +64,7 @@ export async function getBooking(bookingId) {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
+      'Authorization': `Bearer ${getStoredToken() || ''}`,
     },
   });
 
@@ -106,7 +107,7 @@ export async function createBooking(slotId, userPackId) {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
+      'Authorization': `Bearer ${getStoredToken() || ''}`,
     },
     body: JSON.stringify({
       slot_id: slotId,
@@ -151,7 +152,7 @@ export async function cancelBooking(bookingId) {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
+      'Authorization': `Bearer ${getStoredToken() || ''}`,
     },
   });
 

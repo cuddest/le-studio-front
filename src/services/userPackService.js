@@ -1,4 +1,6 @@
 // Frontend service to manage user packs and training type compatibility
+import { getStoredToken } from './authStorage';
+
 const normalizeApiBase = (base) => {
   if (!base) return 'https://le-studio-api.onrender.com/api/v1';
   base = base.replace(/\/$/, '');
@@ -48,7 +50,7 @@ export async function purchasePack(packTemplateId) {
     throw new Error('API base URL not configured. Set VITE_API_BASE in .env');
   }
 
-  const token = localStorage.getItem('token');
+  const token = getStoredToken();
   if (!token) {
     throw new Error('Not authenticated. Please login first.');
   }
@@ -98,7 +100,7 @@ export async function listUserPacks() {
     throw new Error('API base URL not configured. Set VITE_API_BASE in .env');
   }
 
-  const token = localStorage.getItem('token');
+  const token = getStoredToken();
   if (!token) {
     throw new Error('Not authenticated. Please login first.');
   }
