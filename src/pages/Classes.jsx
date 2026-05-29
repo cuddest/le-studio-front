@@ -4,7 +4,7 @@ import { ArrowRight, CalendarDays, Clock3, UserRound, Users, Activity } from 'lu
 import Container from '../components/ui/Container';
 import SectionHeading from '../components/ui/SectionHeading';
 import Button from '../components/ui/Button';
-import { fetchClassCatalog } from '../services/classesService';
+import { fetchSchedulesWithSlots } from '../services/classesService';
 
 const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
