@@ -4,23 +4,24 @@ import { listSchedules, listSlotsBySchedule } from './scheduleService';
  * Converts API slot data to frontend format
  */
 function formatSlot(slot, coach) {
-  const startTime = new Date(slot.start_time);
-  const endTime = new Date(slot.end_time);
+  const startTime = new Date(slot.startTime || slot.start_time || slot.date || slot.createdAt);
+  const endTime = new Date(slot.endTime || slot.end_time || slot.startTime || slot.start_time || slot.date || slot.createdAt);
   const duration = Math.round((endTime - startTime) / 60000);
   
   return {
     id: `slot-${slot.id}`,
     title: slot.name,
-    discipline: slot.training_type?.name || 'Training',
-    duration: `${duration} min`,
-    coach: coach?.name || 'TBA',
+    discipline: slot.trainingTypeName || slot.training_type?.name || 'Training',
+    duration: `${Number.isFinite(duration) && duration > 0 ? duration : 0} min`,
+    coach: coach?.name || slot.coachName || 'TBA',
     price: '2000', // Default price, adjust based on business logic
     image: 'https://images.unsplash.com/photo-1574680096145-d05b474e2155?w=700&h=450&fit=crop&q=80',
-    description: `${slot.training_type?.name || 'Training'} session at ${startTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })}`,
+    description: `${slot.trainingTypeName || slot.training_type?.name || 'Training'} session at ${Number.isNaN(startTime.getTime()) ? 'TBA' : startTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })}`,
     slotId: slot.id,
-    startTime: slot.start_time,
+    startTime: slot.startTime || slot.start_time || '',
     capacity: slot.capacity,
     bookedCount: slot.booked_count,
+    isCancelled: Boolean(slot.isCancelled || slot.is_cancelled),
   };
 }
 
@@ -30,7 +31,7 @@ function formatSlot(slot, coach) {
  */
 export async function fetchClassCatalog() {
   try {
-    const schedules = await listSchedules();
+    const schedules = await listSchedules({ includeUnpublished: true });
     
     // Build a map of all slots
     const allSlots = [];
@@ -41,7 +42,7 @@ export async function fetchClassCatalog() {
         continue;
       }
       try {
-        const slots = await listSlotsBySchedule(scheduleId);
+        const slots = await listSlotsBySchedule(scheduleId, { includeCancelled: true });
         allSlots.push(...slots);
       } catch (error) {
         console.warn(`Failed to fetch slots for schedule ${scheduleId}:`, error);

@@ -12,12 +12,18 @@ const API_BASE = normalizeApiBase(import.meta.env.VITE_API_BASE);
 /**
  * Fetch all available schedules
  */
-export async function listSchedules() {
+export async function listSchedules(options = {}) {
   if (!API_BASE) {
     throw new Error('API base URL not configured. Set VITE_API_BASE in .env');
   }
 
-  const res = await fetch(`${API_BASE}/schedules`);
+  const params = new URLSearchParams();
+  if (options.includeUnpublished) {
+    params.set('include_unpublished', 'true');
+  }
+
+  const url = params.toString() ? `${API_BASE}/schedules?${params.toString()}` : `${API_BASE}/schedules`;
+  const res = await fetch(url);
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
@@ -30,11 +36,12 @@ export async function listSchedules() {
   return (list || []).map((s) => ({
     id: s.ID || s.id,
     title: s.Title || s.title || 'Schedule',
-    description: s.Description || s.description || '',
-    startDate: s.StartDate || s.start_date || '',
-    endDate: s.EndDate || s.end_date || '',
+    weekStart: s.WeekStart || s.week_start || '',
+    weekEnd: s.WeekEnd || s.week_end || '',
+    publishedAt: s.PublishedAt || s.published_at || '',
     isPublished: s.IsPublished || s.is_published || false,
     createdAt: s.CreatedAt || s.created_at || '',
+    updatedAt: s.UpdatedAt || s.updated_at || '',
   }));
 }
 
@@ -42,12 +49,21 @@ export async function listSchedules() {
  * Fetch slots for a specific schedule
  * @param {uint} scheduleId - The schedule ID
  */
-export async function listSlotsBySchedule(scheduleId) {
+export async function listSlotsBySchedule(scheduleId, options = {}) {
   if (!API_BASE) {
     throw new Error('API base URL not configured. Set VITE_API_BASE in .env');
   }
 
-  const res = await fetch(`${API_BASE}/schedules/${scheduleId}/slots`);
+  const params = new URLSearchParams();
+  if (options.includeCancelled) {
+    params.set('include_cancelled', 'true');
+  }
+
+  const url = params.toString()
+    ? `${API_BASE}/schedules/${scheduleId}/slots?${params.toString()}`
+    : `${API_BASE}/schedules/${scheduleId}/slots`;
+
+  const res = await fetch(url);
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
@@ -63,13 +79,19 @@ export async function listSlotsBySchedule(scheduleId) {
     name: s.Name || s.name || 'Session',
     startTime: s.StartTime || s.start_time || '',
     endTime: s.EndTime || s.end_time || '',
+    date: s.Date || s.date || '',
+    dayOfWeek: s.DayOfWeek || s.day_of_week,
+    level: s.Level || s.level || '',
     capacity: s.Capacity || s.capacity || 0,
     bookedCount: s.BookedCount || s.booked_count || 0,
     trainingTypeId: s.TrainingTypeID || s.training_type_id,
     trainingTypeName: s.TrainingType?.Name || s.training_type?.name || 'Unknown',
+    coachId: s.CoachID || s.coach_id,
+    coachName: s.Coach?.Name || s.coach?.name || 'TBA',
     slotType: s.SlotType || s.slot_type || 'mixte', // 'mixte', 'women_only', 'men_only'
     isCancelled: s.IsCancelled || s.is_cancelled || false,
     createdAt: s.CreatedAt || s.created_at || '',
+    updatedAt: s.UpdatedAt || s.updated_at || '',
   }));
 }
 
