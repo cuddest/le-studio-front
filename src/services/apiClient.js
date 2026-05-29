@@ -34,8 +34,8 @@ export async function authenticatedFetch(url, options = {}) {
   }
 
   // ensure single refresh in progress
-  if (!global.__auth_refresh_in_progress) {
-    global.__auth_refresh_in_progress = (async () => {
+  if (!window.__auth_refresh_in_progress) {
+    window.__auth_refresh_in_progress = (async () => {
       try {
         const refreshed = await refreshUserToken(refresh);
         if (refreshed && refreshed.token) {
@@ -52,8 +52,8 @@ export async function authenticatedFetch(url, options = {}) {
     })();
   }
 
-  const newToken = await global.__auth_refresh_in_progress;
-  global.__auth_refresh_in_progress = null;
+  const newToken = await window.__auth_refresh_in_progress;
+  window.__auth_refresh_in_progress = null;
 
   if (!newToken) {
     if (typeof onUnauthorized === 'function') onUnauthorized();
