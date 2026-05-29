@@ -149,12 +149,17 @@ export default function Profile() {
               </Card>
 
               <Card>
-                <div className="flex items-center gap-3 mb-6">
-                  <Calendar size={16} className="text-oak" />
-                  <h3 className="font-sans text-sm font-semibold text-charcoal tracking-wide">
-                    Upcoming Bookings
-                  </h3>
-                </div>
+                <div className="flex items-center justify-between gap-3 mb-6">
+                    <div className="flex items-center gap-3">
+                      <Calendar size={16} className="text-oak" />
+                      <h3 className="font-sans text-sm font-semibold text-charcoal tracking-wide">
+                        Upcoming Bookings
+                      </h3>
+                    </div>
+                    <Link to="/my-bookings" className="text-sm font-semibold text-oak hover:text-oak-dark">
+                      View all
+                    </Link>
+                  </div>
 
                 <div className="space-y-3">
                   {dashboard.upcomingBookings.map((booking) => (
@@ -173,12 +178,17 @@ export default function Profile() {
               </Card>
 
               <Card>
-                <div className="flex items-center gap-3 mb-6">
-                  <History size={16} className="text-oak" />
-                  <h3 className="font-sans text-sm font-semibold text-charcoal tracking-wide">
-                    Booking History
-                  </h3>
-                </div>
+                <div className="flex items-center justify-between gap-3 mb-6">
+                    <div className="flex items-center gap-3">
+                      <History size={16} className="text-oak" />
+                      <h3 className="font-sans text-sm font-semibold text-charcoal tracking-wide">
+                        Booking History
+                      </h3>
+                    </div>
+                    <Link to="/my-bookings" className="text-sm font-semibold text-oak hover:text-oak-dark">
+                      View all
+                    </Link>
+                  </div>
 
                 <div className="space-y-2.5">
                   {dashboard.bookingHistory.map((item) => (
