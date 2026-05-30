@@ -106,6 +106,7 @@ export async function fetchClassCatalog() {
 export async function fetchSchedulesWithSlots() {
   try {
     const schedules = await listSchedules({ includeUnpublished: true });
+    console.log('📍 Schedules from API:', schedules);
     const result = [];
 
     for (const schedule of schedules) {
@@ -113,6 +114,7 @@ export async function fetchSchedulesWithSlots() {
       if (!scheduleId) continue;
       try {
         const slots = await listSlotsBySchedule(scheduleId, { includeCancelled: true });
+        console.log(`📍 Slots for schedule ${scheduleId}:`, slots);
         const formatted = (slots || []).map((s) => ({
           ...s,
           id: s.id,

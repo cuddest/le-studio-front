@@ -98,6 +98,8 @@ export default function Classes() {
         setLoading(true);
         setError(null);
         const data = await fetchSchedulesWithSlots();
+        console.log('🔍 Fetched schedules from API:', data);
+        console.log('📊 Total sessions:', data.reduce((sum, s) => sum + (s.slots?.length || 0), 0));
         setSchedules(data);
       } catch (err) {
         console.error('Failed to load class catalog:', err);
