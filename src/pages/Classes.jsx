@@ -53,6 +53,25 @@ function formatDateLabel(value, format = 'dmy') {
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
+function toDateKey(value) {
+  if (!value) return '';
+
+  if (typeof value === 'string') {
+    const dateOnlyMatch = value.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (dateOnlyMatch) {
+      return `${dateOnlyMatch[1]}-${dateOnlyMatch[2]}-${dateOnlyMatch[3]}`;
+    }
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 function slotSort(a, b) {
   const da = new Date(a.startTime || a.start_time || a.date || 0).getTime();
   const db = new Date(b.startTime || b.start_time || b.date || 0).getTime();
@@ -124,9 +143,9 @@ export default function Classes() {
   };
 
   // Get sessions for selected date
-  const dayIndex = selectedDate.getDay();
+  const selectedDateKey = toDateKey(selectedDate);
   const sessionsForDay = allSlots
-    .filter((slot) => toDayIndex(slot) === dayIndex)
+    .filter((slot) => toDateKey(slot.date || slot.startTime || slot.start_time) === selectedDateKey)
     .filter((slot) => {
       if (filters.schedule !== 'all') {
         const schedule = schedules.find((s) => slot.id?.includes(s.id) || s.slots?.includes(slot));
