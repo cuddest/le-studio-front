@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import HeroMediaSlider from '../components/home/HeroMediaSlider';
 import AboutSection from '../components/home/AboutSection';
@@ -6,14 +7,98 @@ import WeeklyPlanningSection from '../components/home/WeeklyPlanningSection';
 import FaqSection from '../components/home/FaqSection';
 import Container from '../components/ui/Container';
 import Button from '../components/ui/Button';
+import { listCoaches } from '../services/coachService';
+import { listSchedules, listSlotsBySchedule } from '../services/scheduleService';
 import {
   homeHeroMedia,
-  instructors,
-  weeklyPlanning,
   homeFaqs,
 } from '../data';
 
+const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
 export default function Home() {
+  const [coaches, setCoaches] = useState([]);
+  const [weeklyPlanning, setWeeklyPlanning] = useState([]);
+
+  useEffect(() => {
+    // Fetch coaches
+    const loadCoaches = async () => {
+      try {
+        const coachList = await listCoaches();
+        setCoaches(coachList.slice(0, 3)); // Show first 3 coaches
+      } catch (err) {
+        console.warn('Failed to load coaches:', err);
+        setCoaches([]);
+      }
+    };
+
+    // Fetch schedules and slots to build weekly planning
+    const loadWeeklyPlanning = async () => {
+      try {
+        const schedules = await listSchedules({ includeUnpublished: true });
+        const allSlots = [];
+
+        for (const schedule of schedules) {
+          const scheduleId = schedule?.id || schedule?.ID;
+          if (!scheduleId) continue;
+          try {
+            const slots = await listSlotsBySchedule(scheduleId, { includeCancelled: true });
+            allSlots.push(...slots);
+          } catch (err) {
+            console.warn(`Failed to fetch slots for schedule ${scheduleId}:`, err);
+          }
+        }
+
+        // Group slots by day of week and find time windows
+        const byDay = {};
+        allSlots.forEach((slot) => {
+          const dayIndex = slot.dayOfWeek ?? new Date(slot.date || slot.startTime || 0).getDay();
+          if (!byDay[dayIndex]) {
+            byDay[dayIndex] = [];
+          }
+          byDay[dayIndex].push(slot);
+        });
+
+        // Build weekly planning with day, theme (first slot name), and time window
+        const planning = [];
+        for (let i = 0; i < 7; i++) {
+          if (byDay[i] && byDay[i].length > 0) {
+            const slots = byDay[i];
+            const startTimes = slots
+              .map((s) => new Date(s.startTime || s.start_time || 0).getTime())
+              .filter((t) => !isNaN(t));
+            const endTimes = slots
+              .map((s) => new Date(s.endTime || s.end_time || 0).getTime())
+              .filter((t) => !isNaN(t));
+
+            const minStart = startTimes.length > 0 ? Math.min(...startTimes) : 0;
+            const maxEnd = endTimes.length > 0 ? Math.max(...endTimes) : 0;
+
+            const formatTime = (timestamp) => {
+              if (timestamp === 0) return 'TBA';
+              const d = new Date(timestamp);
+              return d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+            };
+
+            planning.push({
+              day: DAY_NAMES[i],
+              theme: slots[0]?.name || 'Session',
+              window: `${formatTime(minStart)} - ${formatTime(maxEnd)}`,
+            });
+          }
+        }
+
+        setWeeklyPlanning(planning.length > 0 ? planning : []);
+      } catch (err) {
+        console.warn('Failed to load weekly planning:', err);
+        setWeeklyPlanning([]);
+      }
+    };
+
+    loadCoaches();
+    loadWeeklyPlanning();
+  }, []);
+
   return (
     <>
       <HeroMediaSlider slides={homeHeroMedia} />
@@ -53,7 +138,7 @@ export default function Home() {
         />
       </div>
 
-      <CoachesPreviewSection coaches={instructors} />
+      <CoachesPreviewSection coaches={coaches} />
 
       <WeeklyPlanningSection weekSchedule={weeklyPlanning} />
 
