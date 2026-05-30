@@ -59,6 +59,21 @@ function slotSort(a, b) {
   return da - db;
 }
 
+function getWeekDates(referenceDate) {
+  // Get the week that contains the reference date (Sunday to Saturday)
+  const date = new Date(referenceDate);
+  const day = date.getDay();
+  const diff = date.getDate() - day;
+  
+  const weekStart = new Date(date.setDate(diff));
+  const weekDates = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(weekStart);
+    d.setDate(d.getDate() + i);
+    weekDates.push(d);
+  }
+  return weekDates;
+}
 
 export default function Classes() {
   const [schedules, setSchedules] = useState([]);
@@ -150,12 +165,6 @@ export default function Classes() {
     setSelectedDate(next);
   };
 
-  const selectDate = (offset) => {
-    const date = new Date();
-    date.setDate(date.getDate() + offset);
-    setSelectedDate(date);
-  };
-
   return (
     <>
       {/* Hero Section */}
@@ -216,17 +225,15 @@ export default function Classes() {
                   </div>
                 </div>
 
-                {/* Day buttons - 7 days starting from today */}
+                {/* Day buttons - week containing selected date */}
                 <div className="flex gap-2 overflow-x-auto pb-2">
-                  {Array.from({ length: 7 }).map((_, i) => {
-                    const date = new Date();
-                    date.setDate(date.getDate() + i);
+                  {getWeekDates(selectedDate).map((date) => {
                     const isSelected = date.toDateString() === selectedDate.toDateString();
                     return (
                       <button
-                        key={i}
+                        key={date.toDateString()}
                         type="button"
-                        onClick={() => selectDate(i)}
+                        onClick={() => setSelectedDate(new Date(date))}
                         className={`flex flex-col items-center justify-center px-4 py-3 rounded-lg whitespace-nowrap transition-colors flex-shrink-0 ${
                           isSelected
                             ? 'bg-charcoal text-white'
