@@ -30,9 +30,9 @@ export default function Home() {
               </h2>
             </div>
             <div className="flex flex-wrap gap-3">
-              <Link to="/booking">
+              <Link to="/classes">
                 <Button variant="oak" size="lg">
-                  Book Now
+                  See Classes
                 </Button>
               </Link>
               <Link to="/my-bookings">

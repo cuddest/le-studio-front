@@ -15,15 +15,15 @@ export default function WeeklyPlanningSection({ weekSchedule = [] }) {
               align="left"
             />
             <Link
-              to="/booking"
+              to="/classes"
               className="inline-flex items-center gap-2 text-oak text-xs font-sans font-medium tracking-[0.15em] uppercase hover:text-oak-dark transition-colors"
             >
-              Open Booking
+              View Full Schedule
               <ArrowRight size={14} />
             </Link>
           </div>
 
-          <Link to="/booking" className="block">
+          <Link to="/classes" className="block">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {weekSchedule.map((day) => (
                 <div
