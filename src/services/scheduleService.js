@@ -21,9 +21,11 @@ export async function listSchedules(options = {}) {
   if (options.includeUnpublished) {
     params.set('include_unpublished', 'true');
   }
+  // Force fresh data from server, bypass cache
+  params.set('_t', Date.now());
 
   const url = params.toString() ? `${API_BASE}/schedules?${params.toString()}` : `${API_BASE}/schedules`;
-  const res = await fetch(url);
+  const res = await fetch(url, { cache: 'no-store' });
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
@@ -58,12 +60,14 @@ export async function listSlotsBySchedule(scheduleId, options = {}) {
   if (options.includeCancelled) {
     params.set('include_cancelled', 'true');
   }
+  // Force fresh data from server, bypass cache
+  params.set('_t', Date.now());
 
   const url = params.toString()
     ? `${API_BASE}/schedules/${scheduleId}/slots?${params.toString()}`
     : `${API_BASE}/schedules/${scheduleId}/slots`;
 
-  const res = await fetch(url);
+  const res = await fetch(url, { cache: 'no-store' });
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
