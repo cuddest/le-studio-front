@@ -11,6 +11,8 @@ const normalizeApiBase = (base) => {
 };
 const API_BASE = normalizeApiBase(import.meta.env.VITE_API_BASE);
 
+const DEFAULT_COACH_IMAGE = 'https://images.ctfassets.net/8urtyqugdt2l/6RlUFNjsYYcgum9SYMpDvd/672865238e5240d224eb781ae27dcafe/Mat_pilates.jpg';
+
 export async function listCoaches() {
   if (!API_BASE) {
     throw new Error('API base URL not configured. Set VITE_API_BASE in .env');
@@ -30,7 +32,7 @@ export async function listCoaches() {
     name: `${c.FirstName || c.first_name || ''} ${c.LastName || c.last_name || ''}`.trim() || c.Name || c.name || '',
     role: c.Role || c.role || '',
     specialty: c.Specialties || c.specialties || c.Specialty || c.specialty || '',
-    image: c.PhotoURL || c.photo_url || c.image || '',
+    image: c.PhotoURL || c.photo_url || c.image || DEFAULT_COACH_IMAGE,
     bio: c.Bio || c.bio || '',
     certifications: c.Certifications || c.certifications || [],
     philosophy: c.Philosophy || c.philosophy || '',
