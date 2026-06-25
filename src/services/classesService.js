@@ -13,7 +13,9 @@ function formatSlot(slot, coach) {
     title: slot.name,
     discipline: slot.trainingTypeName || slot.training_type?.name || 'Training',
     duration: `${Number.isFinite(duration) && duration > 0 ? duration : 0} min`,
-    coach: coach?.name || slot.coachName || 'TBA',
+    coach: coach
+      ? `${coach.first_name || ''} ${coach.last_name || ''}`.trim() || slot.coachName || 'TBA'
+      : slot.coachName || 'TBA',
     price: '2000', // Default price, adjust based on business logic
     image: 'https://images.unsplash.com/photo-1574680096145-d05b474e2155?w=700&h=450&fit=crop&q=80',
     description: `${slot.trainingTypeName || slot.training_type?.name || 'Training'} session at ${Number.isNaN(startTime.getTime()) ? 'TBA' : startTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })}`,
