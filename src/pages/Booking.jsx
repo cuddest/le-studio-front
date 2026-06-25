@@ -172,39 +172,23 @@ export default function Booking() {
     filters.level !== 'all' ||
     filters.onlyCompatible;
 
-  // Filter slots: by week (selected date's week) + by active filters.
-  const weekSlots = useMemo(() => {
-    const week = getWeekDates(selectedDate);
-    const weekKeys = new Set(week.map(toDateKey));
-    return slotsWithCompat.filter((s) => {
-      if (!weekKeys.has(toDateKey(s.startTime || s.dateTime || s.date))) return false;
-      if (filters.trainingType !== 'all' && s.trainingTypeName !== filters.trainingType) return false;
-      if (filters.coach !== 'all' && s.coachName !== filters.coach) return false;
-      if (filters.level !== 'all' && s.level !== filters.level) return false;
-      if (filters.onlyCompatible && s.compatiblePacks.length === 0) return false;
-      return true;
-    });
+  // Filter slots: by the single selected day + by active filters.
+  const daySlots = useMemo(() => {
+    const dayKey = toDateKey(selectedDate);
+    return slotsWithCompat
+      .filter((s) => toDateKey(s.startTime || s.dateTime || s.date) === dayKey)
+      .filter((s) => {
+        if (filters.trainingType !== 'all' && s.trainingTypeName !== filters.trainingType) return false;
+        if (filters.coach !== 'all' && s.coachName !== filters.coach) return false;
+        if (filters.level !== 'all' && s.level !== filters.level) return false;
+        if (filters.onlyCompatible && s.compatiblePacks.length === 0) return false;
+        return true;
+      })
+      .sort((a, b) => new Date(a.startTime) - new Date(b.startTime));
   }, [slotsWithCompat, selectedDate, filters]);
 
-  // Group by day.
-  const slotsByDay = useMemo(() => {
-    const map = new Map();
-    for (const s of weekSlots) {
-      const key = toDateKey(s.startTime || s.dateTime || s.date);
-      if (!map.has(key)) map.set(key, []);
-      map.get(key).push(s);
-    }
-    return Array.from(map.entries())
-      .sort((a, b) => a[0].localeCompare(b[0]))
-      .map(([key, daySlots]) => ({
-        key,
-        date: parseDateKey(key),
-        slots: daySlots.sort((a, b) => new Date(a.startTime) - new Date(b.startTime)),
-      }));
-  }, [weekSlots]);
-
-  const totalSlots = weekSlots.length;
-  const compatibleSlots = weekSlots.filter((s) => s.compatiblePacks.length > 0).length;
+  const totalSlots = daySlots.length;
+  const compatibleSlots = daySlots.filter((s) => s.compatiblePacks.length > 0).length;
   const packStats = useMemo(() => {
     const active = (userPacks || []).filter(
       (p) => p.isPaid && p.status === 'active' && p.remainingSessions > 0
@@ -434,7 +418,7 @@ export default function Booking() {
             <div className="flex items-center justify-center h-64">
               <Loader className="animate-spin text-oak" size={32} />
             </div>
-          ) : !user ? null : slotsByDay.length === 0 ? (
+          ) : !user ? null : daySlots.length === 0 ? (
             <EmptyState
               hasFilters={hasActiveFilters}
               onResetFilters={resetFilters}
@@ -445,23 +429,14 @@ export default function Booking() {
               ).length}
             />
           ) : (
-            <div className="space-y-8">
-              {slotsByDay.map(({ key, date, slots: daySlots }) => (
-                <div key={key}>
-                  <h4 className="font-sans text-[11px] font-semibold uppercase tracking-[0.18em] text-text-muted mb-3">
-                    {formatDayHeading(date)}
-                  </h4>
-                  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                    {daySlots.map((slot) => (
-                      <SlotCard
-                        key={slot.id}
-                        slot={slot}
-                        onBook={handleBookSlot}
-                        canBook={slot.compatiblePacks.length > 0}
-                      />
-                    ))}
-                  </div>
-                </div>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {daySlots.map((slot) => (
+                <SlotCard
+                  key={slot.id}
+                  slot={slot}
+                  onBook={handleBookSlot}
+                  canBook={slot.compatiblePacks.length > 0}
+                />
               ))}
             </div>
           )}
@@ -626,9 +601,4 @@ function EmptyState({ hasFilters, onResetFilters, totalSlotsInWeek }) {
       )}
     </div>
   );
-}
-
-function parseDateKey(key) {
-  const [y, m, d] = key.split('-').map(Number);
-  return new Date(y, m - 1, d);
 }
