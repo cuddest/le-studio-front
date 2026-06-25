@@ -148,7 +148,7 @@ export default function Classes() {
     .filter((slot) => toDateKey(slot.date || slot.startTime || slot.start_time) === selectedDateKey)
     .filter((slot) => {
       if (filters.schedule !== 'all') {
-        const schedule = schedules.find((s) => slot.id?.includes(s.id) || s.slots?.includes(slot));
+        const schedule = schedules.find((s) => s.slots?.includes(slot));
         if (!schedule || schedule.title !== filters.schedule) return false;
       }
       if (filters.coach !== 'all' && (slot.coach || 'TBA') !== filters.coach) return false;
