@@ -35,7 +35,7 @@ export default function Home() {
     // Fetch schedules and slots to build weekly planning
     const loadWeeklyPlanning = async () => {
       try {
-        const schedules = await listSchedules({ includeUnpublished: true });
+        const schedules = await listSchedules();
         const allSlots = [];
 
         for (const schedule of schedules) {

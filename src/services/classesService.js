@@ -36,11 +36,11 @@ function formatSlot(slot, coach) {
  */
 export async function fetchClassCatalog() {
   try {
-    const schedules = await listSchedules({ includeUnpublished: true });
-    
+    const schedules = (await listSchedules()).filter((s) => s.isPublished);
+
     // Build a map of all slots
     const allSlots = [];
-    
+
     for (const schedule of schedules) {
       const scheduleId = schedule?.id || schedule?.ID;
       if (!scheduleId) {
@@ -105,7 +105,7 @@ export async function fetchClassCatalog() {
  */
 export async function fetchSchedulesWithSlots() {
   try {
-    const schedules = await listSchedules({ includeUnpublished: true });
+    const schedules = (await listSchedules()).filter((s) => s.isPublished);
     console.log('📍 Schedules from API:', schedules);
     const result = [];
 
