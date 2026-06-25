@@ -91,7 +91,9 @@ export async function listSlotsBySchedule(scheduleId, options = {}) {
     trainingTypeId: s.TrainingTypeID || s.training_type_id,
     trainingTypeName: s.TrainingType?.Name || s.training_type?.name || 'Unknown',
     coachId: s.CoachID || s.coach_id,
-    coachName: s.Coach?.Name || s.coach?.name || 'TBA',
+    coachName: s.Coach
+      ? `${s.Coach.first_name || ''} ${s.Coach.last_name || ''}`.trim() || 'TBA'
+      : s.coach?.name || 'TBA',
     slotType: s.SlotType || s.slot_type || 'mixte', // 'mixte', 'women_only', 'men_only'
     isCancelled: s.IsCancelled || s.is_cancelled || false,
     createdAt: s.CreatedAt || s.created_at || '',

@@ -107,7 +107,6 @@ export default function Classes() {
     coach: 'all',
     level: 'all',
     type: 'all',
-    gender: 'all',
   });
   const [showFilters, setShowFilters] = useState(false);
 
@@ -136,10 +135,9 @@ export default function Classes() {
   const allSlots = schedules.flatMap((s) => s.slots || []);
   const filterOptions = {
     schedules: ['all', ...Array.from(new Set(schedules.map((s) => s.title))).filter(Boolean)],
-    coaches: ['all', ...Array.from(new Set(allSlots.map((s) => s.coach || 'TBA'))).filter(Boolean)],
-    levels: ['all', ...Array.from(new Set(allSlots.map((s) => s.level || 'All Levels'))).filter(Boolean)],
-    types: ['all', ...Array.from(new Set(allSlots.map((s) => s.slotType || 'All Types'))).filter(Boolean)],
-    genders: ['all', ...Array.from(new Set(allSlots.map((s) => s.gender || 'Mixte'))).filter(Boolean)],
+    coaches: ['all', ...Array.from(new Set(allSlots.map((s) => s.coachName || 'TBA'))).filter(Boolean)],
+    levels: ['all', ...Array.from(new Set(allSlots.map((s) => s.level).filter(Boolean)))],
+    types: ['all', ...Array.from(new Set(allSlots.map((s) => s.slotType).filter(Boolean)))],
   };
 
   // Get sessions for selected date
@@ -151,10 +149,9 @@ export default function Classes() {
         const schedule = schedules.find((s) => s.slots?.includes(slot));
         if (!schedule || schedule.title !== filters.schedule) return false;
       }
-      if (filters.coach !== 'all' && (slot.coach || 'TBA') !== filters.coach) return false;
-      if (filters.level !== 'all' && (slot.level || 'All Levels') !== filters.level) return false;
-      if (filters.type !== 'all' && (slot.slotType || 'All Types') !== filters.type) return false;
-      if (filters.gender !== 'all' && (slot.gender || 'Mixte') !== filters.gender) return false;
+      if (filters.coach !== 'all' && (slot.coachName || 'TBA') !== filters.coach) return false;
+      if (filters.level !== 'all' && slot.level !== filters.level) return false;
+      if (filters.type !== 'all' && slot.slotType !== filters.type) return false;
       return true;
     })
     .sort(slotSort);
@@ -293,7 +290,7 @@ export default function Classes() {
                 {/* Filter controls */}
                 {showFilters && (
                   <div className="bg-white border border-border-light rounded-lg p-6 space-y-4">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                       {/* Schedule filter */}
                       <div>
                         <label className="block text-xs uppercase tracking-[0.16em] font-semibold text-text-muted mb-2">
@@ -360,25 +357,7 @@ export default function Classes() {
                         >
                           {filterOptions.types.map((option) => (
                             <option key={option} value={option}>
-                              {option === 'all' ? 'All Types' : option}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-
-                      {/* Gender filter */}
-                      <div>
-                        <label className="block text-xs uppercase tracking-[0.16em] font-semibold text-text-muted mb-2">
-                          Gender
-                        </label>
-                        <select
-                          value={filters.gender}
-                          onChange={(e) => setFilters({ ...filters, gender: e.target.value })}
-                          className="w-full px-3 py-2 border border-border-light rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-oak"
-                        >
-                          {filterOptions.genders.map((option) => (
-                            <option key={option} value={option}>
-                              {option === 'all' ? 'All' : option}
+                              {option === 'all' ? 'All Types' : (option === 'mixte' ? 'Mixed' : option === 'women_only' ? 'Women Only' : option === 'men_only' ? 'Men Only' : option)}
                             </option>
                           ))}
                         </select>
@@ -431,8 +410,8 @@ export default function Classes() {
                                   </span>
                                 )}
                               </div>
-                              <h4 className="font-serif text-2xl text-charcoal">{slot.title || 'Session'}</h4>
-                              <p className="text-sm text-text-muted mt-1">{slot.coach || 'TBA'}</p>
+                              <h4 className="font-serif text-2xl text-charcoal">{slot.name || 'Session'}</h4>
+                              <p className="text-sm text-text-muted mt-1">{slot.coachName || 'TBA'}</p>
                             </div>
 
                             <div className="flex flex-col items-end gap-2">
@@ -463,13 +442,7 @@ export default function Classes() {
                                 <p className="text-xs uppercase tracking-[0.16em] font-semibold text-text-muted mb-1">
                                   Type
                                 </p>
-                                <p className="text-sm text-charcoal">{slot.slotType || 'Standard'}</p>
-                              </div>
-                              <div>
-                                <p className="text-xs uppercase tracking-[0.16em] font-semibold text-text-muted mb-1">
-                                  Gender
-                                </p>
-                                <p className="text-sm text-charcoal">{slot.gender || 'Mixte'}</p>
+                                <p className="text-sm text-charcoal">{slot.slotType === 'mixte' ? 'Mixed' : slot.slotType === 'women_only' ? 'Women Only' : slot.slotType === 'men_only' ? 'Men Only' : slot.slotType || 'Standard'}</p>
                               </div>
                               <div>
                                 <p className="text-xs uppercase tracking-[0.16em] font-semibold text-text-muted mb-1">
