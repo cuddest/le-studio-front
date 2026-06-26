@@ -12,8 +12,8 @@ export default function Footer() {
             {/* Brand Column */}
             <div className="md:col-span-4">
               <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center">
-                  <span className="font-serif text-charcoal-deep text-base font-bold">LC</span>
+                <div className="w-12 h-12 rounded-full bg-white overflow-hidden">
+                  <img src="/logo.jpg" alt="Le Studio Contrology" className="w-full h-full object-cover" />
                 </div>
                 <div>
                   <span className="font-sans text-[10px] font-semibold tracking-[0.35em] uppercase block text-white leading-tight">

@@ -47,8 +47,8 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-18 sm:h-22">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-3 group">
-            <div className="relative w-10 h-10 rounded-full bg-white flex items-center justify-center overflow-hidden border border-white/20">
-              <span className="font-serif text-charcoal-deep text-sm font-bold leading-none">LC</span>
+            <div className="relative w-10 h-10 rounded-full bg-white overflow-hidden border border-white/20">
+              <img src="/logo.jpg" alt="Le Studio Contrology" className="w-full h-full object-cover" />
             </div>
             <div className="hidden sm:block">
               <span className="text-white font-sans text-[10px] font-semibold tracking-[0.35em] uppercase block leading-tight">
