@@ -28,11 +28,18 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
+  useEffect(() => {
+    document.body.style.overflow = isOpen ? 'hidden' : '';
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
+
   return (
     <nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-        scrolled
-          ? 'bg-charcoal-deep/95 backdrop-blur-md shadow-lg'
+      className={`fixed top-0 left-0 right-0 z-50 transition-colors duration-300 ${
+        scrolled || isOpen
+          ? 'bg-charcoal-deep shadow-lg'
           : 'bg-transparent'
       }`}
     >
@@ -97,18 +104,19 @@ export default function Navbar() {
           <button
             onClick={() => setIsOpen(!isOpen)}
             className="md:hidden text-white p-2 hover:text-oak transition-colors cursor-pointer"
+            aria-label={isOpen ? 'Close menu' : 'Open menu'}
           >
-            {isOpen ? <X size={22} /> : <Menu size={22} />}
+            {isOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
         </div>
 
         {/* Mobile Navigation */}
         <div
-          className={`md:hidden overflow-hidden transition-all duration-500 ease-in-out ${
-            isOpen ? 'max-h-96 pb-6' : 'max-h-0'
+          className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${
+            isOpen ? 'max-h-[calc(100vh-5rem)]' : 'max-h-0'
           }`}
         >
-          <div className="pt-2 border-t border-white/10">
+          <div className="pt-2 pb-6 border-t border-white/10">
             <div className="flex flex-col gap-1 mt-2">
               {navLinks.map((link) => (
                 <Link
@@ -117,8 +125,8 @@ export default function Navbar() {
                   onClick={() => setIsOpen(false)}
                   className={`px-4 py-3.5 rounded font-sans text-[11px] font-medium tracking-[0.2em] uppercase transition-all duration-200 ${
                     location.pathname === link.path
-                      ? 'text-oak bg-white/5'
-                      : 'text-white/60 hover:text-oak hover:bg-white/5'
+                      ? 'text-oak bg-white/10'
+                      : 'text-white hover:text-oak hover:bg-white/5'
                   }`}
                 >
                   {link.name}
@@ -129,8 +137,8 @@ export default function Navbar() {
                 onClick={() => setIsOpen(false)}
                 className={`px-4 py-3.5 rounded font-sans text-[11px] font-medium tracking-[0.2em] uppercase transition-all duration-200 ${
                   location.pathname === accountLink.path
-                    ? 'text-oak bg-white/5'
-                    : 'text-white/60 hover:text-oak hover:bg-white/5'
+                    ? 'text-oak bg-white/10'
+                    : 'text-white hover:text-oak hover:bg-white/5'
                 }`}
               >
                 {accountLink.name}
@@ -141,7 +149,7 @@ export default function Navbar() {
                     logout();
                     setIsOpen(false);
                   }}
-                  className="mx-4 px-4 py-3 rounded font-sans text-[11px] font-medium tracking-[0.2em] uppercase text-white/60 hover:text-oak hover:bg-white/5 transition-all duration-200 text-left cursor-pointer"
+                  className="mx-4 px-4 py-3 rounded font-sans text-[11px] font-medium tracking-[0.2em] uppercase text-white hover:text-oak hover:bg-white/5 transition-all duration-200 text-left cursor-pointer"
                 >
                   Sign Out
                 </button>
